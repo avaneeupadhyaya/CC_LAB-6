@@ -18,8 +18,18 @@ pipeline {
                 docker network create app-network || true
                 docker rm -f backend1 backend2 || true
 
-                docker run -d --name backend1 --network app-network backend-app
-                docker run -d --name backend2 --network app-network backend-app
+                docker run -d \
+                  --name backend1 \
+                  --network app-network \
+                  backend-app
+
+                docker run -d \
+                  --name backend2 \
+                  --network app-network \
+                  backend-app
+
+                # Give containers time to start
+                sleep 3
                 '''
             }
         }
@@ -36,6 +46,10 @@ pipeline {
                   nginx
 
                 docker cp nginx/default.conf nginx-lb:/etc/nginx/conf.d/default.conf
+
+                # Wait for Docker DNS to register backend containers
+                sleep 5
+
                 docker exec nginx-lb nginx -s reload
                 '''
             }
